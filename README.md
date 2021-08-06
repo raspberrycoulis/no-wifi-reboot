@@ -2,7 +2,7 @@
 
 This is a very simple bash script that pings a network device, then initiates a reboot if there is no response - i.e. if the network is down.
 
-The code is as simple as this:
+Inspired by [this guide](https://weworkweplay.com/play/rebooting-the-raspberry-pi-when-it-loses-wireless-connection-wifi/), the code is as simple as this:
 
 ```bash
 #!/bin/bash
