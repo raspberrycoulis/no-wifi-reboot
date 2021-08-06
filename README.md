@@ -30,7 +30,7 @@ The IP address in this instance is the router, so if this is unreachable it assu
 Add the script as a cronjob (running every 5 minutes) by entering:
 
 ```shell
-$ sudo crontabe -e
+$ sudo crontab -e
 ```
 
 Then add the following:
