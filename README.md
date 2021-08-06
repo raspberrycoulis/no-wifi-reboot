@@ -11,7 +11,11 @@ Inspired by [this guide](https://weworkweplay.com/play/rebooting-the-raspberry-p
 # the network is down so initiates a reboot of the Raspberry Pi            #
 
 echo "Checking network..."
-ping -c10 192.168.1.254 > /dev/null
+# Pick one below:
+# 1. Ping a router
+#ping -c10 192.168.1.254 > /dev/null
+# 2. Ping Google
+ping -c10 google.co.uk > /dev/null
 
 if [ $? != 0 ]
 then
