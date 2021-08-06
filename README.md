@@ -38,3 +38,13 @@ Then add the following:
 ```bash
 */5 * * * * /usr/bin/sudo -H /home/pi/no-wifi-reboot/checkwifi.sh >> /dev/null 2>&1
 ```
+
+## Check if the cronjob has run
+
+To see if the cronjob has run the `checkwifi.sh` script, search the `syslog` with:
+
+```shell
+$ grep -i checkwifi.sh /var/log/syslog
+```
+
+If you see an entry, it has run successfully!
