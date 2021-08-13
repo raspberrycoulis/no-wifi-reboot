@@ -16,5 +16,5 @@ then
   sleep 5;
   sudo /sbin/shutdown -r now
 else
-  echo "Network is fine."
+  echo "Network is fine." >> /dev/null
 fi

@@ -1,20 +1,20 @@
 # No WiFi? Reboot!
 
-This is a very simple bash script that pings a network device, then initiates a reboot if there is no response - i.e. if the network is down.
+This is a very simple bash script that pings a network device / a website of your choice, then initiates a reboot if there is no response - i.e. if the network is down.
 
 Inspired by [this guide](https://weworkweplay.com/play/rebooting-the-raspberry-pi-when-it-loses-wireless-connection-wifi/), the code is as simple as this:
 
 ```bash
 #!/bin/bash
 
-# This pings the router 10 times, and if there is no response, it assumes  #
-# the network is down so initiates a reboot of the Raspberry Pi            #
+## This pings the router / a website 10 times, and if there is no response, it assumes  ##
+## the network is down so initiates a reboot of the Raspberry Pi                        ##
 
 echo "Checking network..."
-# Pick one below:
+## Pick one below:
 # 1. Ping a router
 #ping -c10 192.168.1.254 > /dev/null
-# 2. Ping Google
+## 2. Ping Google
 ping -c10 google.co.uk > /dev/null
 
 if [ $? != 0 ]
@@ -23,7 +23,7 @@ then
   sleep 5;
   sudo /sbin/shutdown -r now
 else
-  echo "Network is fine."
+  echo "Network is fine." >> /dev/null
 fi
 ```
 
@@ -40,7 +40,7 @@ $ sudo crontab -e
 Then add the following:
 
 ```bash
-*/5 * * * * /usr/bin/sudo -H /home/pi/no-wifi-reboot/checkwifi.sh >> /dev/null 2>&1
+*/5 * * * * /usr/bin/sudo -H /home/pi/no-wifi-reboot/checkwifi.sh >> /home/pi/no-wifi-reboot/reboot.log 2>&1
 ```
 
 ## Check if the cronjob has run
