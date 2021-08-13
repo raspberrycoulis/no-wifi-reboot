@@ -1,14 +1,14 @@
 #!/bin/bash
 
-# This pings the router 10 times, and if there is no response, it assumes  #
-# the network is down so initiates a reboot of the Raspberry Pi            #
+## This pings the router / a website 10 times, and if there is no response, it assumes  ##
+## the network is down so initiates a reboot of the Raspberry Pi                        ##
 
-echo "Checking network..."
-# Pick one below:
+echo "Checking network..." >> /dev/null
+## Pick one below:
 # 1. Ping a router
-#ping -c10 192.168.1.254 > /dev/null
-# 2. Ping Google
-ping -c10 google.co.uk > /dev/null
+#ping -c10 192.168.1.254 >> /dev/null
+## 2. Ping Google
+ping -c10 google.co.uk >> /dev/null
 
 if [ $? != 0 ]
 then
