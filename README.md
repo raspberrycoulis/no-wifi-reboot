@@ -19,7 +19,7 @@ ping -c10 google.co.uk >> /dev/null
 
 if [ $? != 0 ]
 then
-  echo -e "No network connection! Rebooting... on`date +"%e %B %Y at %X"`" >> /home/pi/no-wifi-reboot/reboot.log
+  echo -e "No network connection! Rebooting... on `date +"%e %B %Y at %X"`" >> /home/pi/no-wifi-reboot/reboot.log
   sleep 5;
   sudo /sbin/shutdown -r now
 else
