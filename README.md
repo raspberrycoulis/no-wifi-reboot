@@ -2,7 +2,10 @@
 
 This is a very simple bash script that pings a network device / a website of your choice, then initiates a reboot if there is no response - i.e. if the network is down.
 
-Inspired by [this guide](https://weworkweplay.com/play/rebooting-the-raspberry-pi-when-it-loses-wireless-connection-wifi/), the code is as simple as this:
+Inspired by [this guide](https://weworkweplay.com/play/rebooting-the-raspberry-pi-when-it-loses-wireless-connection-wifi/) and [this script](https://github.com/raspberrypi/linux/issues/3034#issuecomment-723420437). The code is as simple as this:
+
+## Check then reboot
+This version will check for network connectivity and initiate a reboot if there are issues:
 
 ```bash
 #!/bin/bash
@@ -10,24 +13,79 @@ Inspired by [this guide](https://weworkweplay.com/play/rebooting-the-raspberry-p
 ## This pings the router / a website 10 times, and if there is no response, it assumes  ##
 ## the network is down so initiates a reboot of the Raspberry Pi                        ##
 
-echo -e "Checking network..." >> /dev/null
-## Pick one below:
-# 1. Ping a router
-#ping -c10 192.168.1.254 >> /dev/null
-## 2. Ping Google
-ping -c10 google.co.uk >> /dev/null
+## Set the log file location and name
+logPath=/home/pi/no-wifi-reboot/logs
+logFile=reboot.log
 
-if [ $? != 0 ]
-then
-  echo -e "No network connection! Rebooting... on `date +"%e %B %Y at %X"`" >> /home/pi/no-wifi-reboot/reboot.log
-  sleep 5;
-  sudo /sbin/shutdown -r now
+## Specify your ping target - default is Google's public IP address
+ping_target=8.8.8.8
+
+## Create a log file if one is not already found
+find "$logPath/" -type f -size +512k -name "$logFile" -exec rm -rf {} \;
+if [ ! -f "$logPath/$logFile" ]; then
+  echo "`date +"%e %B %Y at %X"`: Creating new logfile: $logPath/$logFile"
+  touch "$logPath/$logFile"
 else
-  echo -e "Network is fine." >> /dev/null
+  echo "`date +"%e %B %Y at %X"`: Existing log file found."
 fi
+
+## Main code
+echo "`date +"%e %B %Y at %X"`: Checking network..."
+ping -q -c 10 $ping_target > /dev/null
+if [ $? -eq 0 ]; then
+  echo "`date +"%e %B %Y at %X"`: Network is fine!"
+else
+  echo "`date +"%e %B %Y at %X"`: No network connection! Rebooting..."
+  ## Sleep for 5s...
+  sleep 5
+  ## ... now reboot!
+  sudo /sbin/shutdown -r now
+  exit
+fi
+
 ```
 
-The IP address in this instance is the router, so if this is unreachable it assumes the internal network is down, so triggers the Raspberry Pi to reboot. A log file is also created, called `reboot.log`.
+## Check then repair
+This version will check for network connectivity and attempts to repair / restart the affected services:
+
+```bash
+#!/bin/sh
+## This pings the router / a website 10 times, and if there is no response, it assumes  ##
+## the network is down so repairs the DHCP client then restarts the SSH service.        ##
+
+## Set the log file location and name
+logPath=/home/pi/no-wifi-reboot/logs
+logFile=repair.log
+
+## Specify your ping target - default is Google's public IP address
+ping_target=8.8.8.8
+
+## Create a log file if one is not already found
+find "$logPath/" -type f -size +512k -name "$logFile" -exec rm -rf {} \;
+if [ ! -f "$logPath/$logFile" ]; then
+  echo "`date +"%e %B %Y at %X"`: Creating new logfile: $logPath/$logFile"
+  touch "$logPath/$logFile"
+else
+  echo "`date +"%e %B %Y at %X"`: Existing log file found."
+fi
+
+## Main code
+echo "`date +"%e %B %Y at %X"`: Checking network..."
+ping -q -c 10 $ping_target > /dev/null
+if [ $? -eq 0 ]; then
+  echo "`date +"%e %B %Y at %X"`: Network is fine!"
+else
+  echo "`date +"%e %B %Y at %X"`: No network connection! Repairing..."
+  ## If the connectivity check fails, this repairs the DHCP client service...
+  sudo dhclient -r; sudo dhclient > /dev/null
+  ## ... sleeps for 15s...
+  sleep 15
+  ## ... then restarts the SSH service.
+  sudo systemctl restart sshd
+  echo "`date +"%e %B %Y at %X"`: Network should be repaired!"
+  exit
+fi
+```
 
 ## Running
 
@@ -40,15 +98,21 @@ $ sudo crontab -e
 Then add the following:
 
 ```bash
-*/5 * * * * /usr/bin/sudo -H /home/pi/no-wifi-reboot/checkwifi.sh >> /home/pi/no-wifi-reboot/reboot.log 2>&1
+*/5 * * * * /usr/bin/sudo -H /home/pi/no-wifi-reboot/check-then-reboot.sh >> /home/pi/no-wifi-reboot/logs/check-then-reboot.log 2>&1
+```
+
+or for the repair script:
+
+```bash
+*/5 * * * * /usr/bin/sudo -H /home/pi/no-wifi-reboot/check-then-repair.sh >> /home/pi/no-wifi-reboot/logs/check-then-repair.log 2>&1
 ```
 
 ## Check if the cronjob has run
 
-To see if the cronjob has run the `checkwifi.sh` script, search the `syslog` with:
+To see if the cronjob has run the appropriate script, search the `syslog` with, substituting `****` with the `pair` or `boot`:
 
 ```shell
-$ grep -i checkwifi.sh /var/log/syslog
+$ grep -i check-then-re****.sh /var/log/syslog
 ```
 
 If you see an entry, it has run successfully!
