@@ -26,7 +26,7 @@ if [ $? -eq 0 ]; then
 else
   echo "`date +"%e %B %Y at %X"`: No network connection! Repairing..."
   ## If the connectivity check fails, this repairs the DHCP client service...
-  sudo dhclient -r; sudo dhclient > /dev/null
+  sudo dhclient -r eth0; sudo dhclient eth0> /dev/null
   ## ... sleeps for 15s...
   sleep 15
   ## ... then restarts the SSH service.
